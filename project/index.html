@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRO Analyzer AI</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Използваме marked.js за рендериране на Markdown отговора от AI -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>CRO Analyzer AI</h1>
+        <p>Вашият AI асистент за оптимизация на конверсиите</p>
+    </header>
+
+    <div class="layout-container">
+        <aside id="history-sidebar">
+            <div class="history-header">
+                <h2>История</h2>
+                <button id="clear-history-btn" class="clear-btn" title="Изчисти цялата история">Изчисти</button>
+            </div>
+            <div id="history-list">
+                <p class="empty-history">Нямате предишни анализи</p>
+            </div>
+        </aside>
+
+        <main>
+            <!-- Формата ще бъде добавена тук според Task 01 -->
+        <section id="input-section">
+            <h2>Въвеждане на данни</h2>
+            <form id="cro-form">
+                <div class="form-group" style="background-color: #eff6ff; padding: 1rem; border-radius: 6px; border: 1px solid #bfdbfe;">
+                    <label for="api-key">OpenAI API Key (Required for AI)</label>
+                    <input type="password" id="api-key" required placeholder="sk-...">
+                    <small style="color: #6b7280; display: block; margin-top: 0.5rem;">Ключът се използва само локално във вашия браузър и не се запазва на сървър.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="page-url">URL на страницата (Optional)</label>
+                    <input type="url" id="page-url" placeholder="https://example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="business-desc">Кратко описание на бизнеса *</label>
+                    <textarea id="business-desc" required rows="3" placeholder="Какво продавате или предлагате?"></textarea>
+                    <div class="field-meta">
+                        <span class="error-msg" id="business-desc-error"></span>
+                        <span class="char-counter" id="business-desc-counter">0 / 30 мин.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="page-goal">Цел на страницата *</label>
+                    <input type="text" id="page-goal" required placeholder="Напр. генериране на лийдове, продажби">
+                </div>
+
+                <div class="form-group">
+                    <label for="target-audience">Основна аудитория *</label>
+                    <input type="text" id="target-audience" required placeholder="Кой е вашият идеален клиент?">
+                </div>
+
+                <div class="form-group">
+                    <label for="current-problem">Текущ проблем *</label>
+                    <textarea id="current-problem" required rows="3" placeholder="Напр. висок bounce rate, малко конверсии"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="desired-action">Желано действие *</label>
+                    <input type="text" id="desired-action" required placeholder="Напр. попълване на форма, покупка">
+                </div>
+
+                <div class="form-group">
+                    <label for="page-text">Текст от страницата / ръчно описание *</label>
+                    <textarea id="page-text" required rows="8" placeholder="Копирайте текста от лендинг страницата тук..."></textarea>
+                    <div class="field-meta">
+                        <span class="error-msg" id="page-text-error"></span>
+                        <span class="char-counter" id="page-text-counter">0 / 100 мин.</span>
+                    </div>
+                </div>
+
+                <button type="submit" id="generate-btn" disabled>Generate CRO Analysis</button>
+            </form>
+        </section>
+
+        <!-- Резултатите ще бъдат добавени тук според Task 01 -->
+        <section id="results-section" style="display: none;">
+            <div class="results-header">
+                <h2>Резултати от анализа</h2>
+                <div class="results-actions">
+                    <button id="copy-btn">Копирай резултата</button>
+                    <button id="print-btn" class="print-btn">Принтирай / PDF</button>
+                </div>
+            </div>
+            
+            <div id="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <div id="loading-text" class="loading-text">Инициализиране на анализа...</div>
+            </div>
+
+            <div id="results-container">
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>1. Обобщение на страницата</h3>
+                        <button class="section-copy-btn" data-target="res-summary" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-summary"></div>
+                </div>
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>2. Основни CRO проблеми</h3>
+                        <button class="section-copy-btn" data-target="res-problems" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-problems"></div>
+                </div>
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>3. Препоръки за подобрение</h3>
+                        <button class="section-copy-btn" data-target="res-recommendations" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-recommendations"></div>
+                </div>
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>4. Предложена структура на страницата</h3>
+                        <button class="section-copy-btn" data-target="res-structure" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-structure"></div>
+                </div>
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>5. Приоритети</h3>
+                        <button class="section-copy-btn" data-target="res-priorities" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-priorities"></div>
+                </div>
+                <div class="result-box">
+                    <div class="box-header">
+                        <h3>6. Next steps</h3>
+                        <button class="section-copy-btn" data-target="res-nextsteps" title="Копирай тази секция">📋</button>
+                    </div>
+                    <div id="res-nextsteps"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
