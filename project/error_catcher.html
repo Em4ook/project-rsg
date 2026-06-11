@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Error Catcher</title>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            fetch('/log_error', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message, lineno, colno, stack: error ? error.stack : ''})
+            });
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MOCK HTML ELEMENTS -->
+    <div id="cro-form"></div>
+    <div id="results-section"></div>
+    <div id="results-container"></div>
+    <div id="loading-indicator"></div>
+    <div id="loading-text"></div>
+    <div id="copy-btn"></div>
+    <div id="history-list"></div>
+    <div id="clear-history-btn"></div>
+    <div id="business-desc" value=""></div>
+    <div id="page-text" value=""></div>
+    <div id="generate-btn"></div>
+    <div id="business-desc-counter"></div>
+    <div id="page-text-counter"></div>
+    <div id="business-desc-error"></div>
+    <div id="page-text-error"></div>
+    <div id="page-goal" value=""></div>
+    <div id="target-audience" value=""></div>
+    <div id="current-problem" value=""></div>
+    <div id="desired-action" value=""></div>
+    <div id="res-summary"></div>
+    <div id="res-problems"></div>
+    <div id="res-recommendations"></div>
+    <div id="res-structure"></div>
+    <div id="res-priorities"></div>
+    <div id="res-nextsteps"></div>
+    <div id="api-key" value=""></div>
+    <div id="page-url" value=""></div>
+    <button id="print-btn"></button>
+    <button class="section-copy-btn" data-target="res-summary"></button>
+</head>
+<body>
+    <script src="app.js"></script>
+</body>
+</html>

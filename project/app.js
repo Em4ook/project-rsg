@@ -12,6 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnClearHistory = document.getElementById('clear-history-btn');
 
     let currentAnalysisId = null;
+    let activeAnalysisData = null;
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    const newAnalysisBtn = document.getElementById('new-analysis-btn');
+    const editBtn = document.getElementById('edit-btn');
+    const inputSection = document.getElementById('input-section');
+    const loadDemoBtn = document.getElementById('load-demo-btn');
+
+    const DEMO_DATA = {
+        url: "https://saas-example.com/pricing",
+        businessDesc: "Ние продаваме софтуер за управление на задачи за отдалечени екипи. Продуктът ни помага за лесно проследяване на проекти, разпределение на натоварването и споделяне на файлове на едно централизирано място.",
+        pageGoal: "Регистрация за безплатен 14-дневен пробен период (Free Trial)",
+        targetAudience: "Мениджъри на проекти, тийм лидери и собственици на малък до среден бизнес с отдалечени екипи.",
+        currentProblem: "Висок bounce rate на ценовата ни страница. Посетителите разглеждат плановете, но много малко от тях кликат върху бутона за стартиране на пробен период.",
+        desiredAction: "Кликване върху бутона 'Стартирай безплатен пробен период' и попълване на формата за регистрация.",
+        pageText: "Нашите планове са гъвкави и проектирани да растат заедно с вашия бизнес. Изберете най-доброто решение за вашия екип.\n\nПлан 'Старт': $9 на потребител/месец. Включва до 5 проекта, 10GB пространство за файлове и базови интеграции.\n\nПлан 'Про': $19 на потребител/месец. Неограничени проекти, 100GB пространство, разширени отчети, интеграция с Slack и Jira.\n\nПлан 'Ентърпрайс': Свържете се с продажбите за индивидуална оферта. Персонализирано внедряване, денонощна поддръжка, неограничено пространство.\n\nРегистрирайте се днес и получете 14 дни безплатен достъп до всички функции! Без изискване на кредитна карта."
+    };
 
     // Елементи за валидация (Task 04)
     const businessDesc = document.getElementById('business-desc');
@@ -33,45 +49,207 @@ document.addEventListener('DOMContentLoaded', () => {
         const isProblem = document.getElementById('current-problem').value.trim() !== '';
         const isAction = document.getElementById('desired-action').value.trim() !== '';
 
-        const isValid = busLength >= 30 && textLength >= 100 && isGoal && isAudience && isProblem && isAction;
+        const isValid = busLength >= 30 && busLength <= 500 && textLength >= 100 && textLength <= 10000 && isGoal && isAudience && isProblem && isAction;
         btnGenerate.disabled = !isValid;
     }
 
-    function updateCounter(input, counterEl, errorEl, minLength) {
+    function updateCounter(input, counterEl, errorEl, minLength, maxLength) {
         const len = input.value.trim().length;
-        counterEl.innerText = `${len} / ${minLength} мин.`;
+        counterEl.innerText = `${len} / ${minLength} мин. (макс. ${maxLength})`;
         
-        if (len >= minLength) {
+        if (len >= minLength && len <= maxLength) {
             counterEl.classList.add('valid');
             counterEl.classList.remove('invalid');
             errorEl.innerText = '';
-            input.style.borderColor = '#10b981';
+            
+            // Оранжево предупреждение при наближаване на лимита (напр. 90%)
+            if (len >= maxLength * 0.9) {
+                counterEl.style.color = '#f59e0b'; // оранжев
+                input.style.borderColor = '#f59e0b';
+            } else {
+                counterEl.style.color = ''; // по подразбиране зелен от класа .valid
+                input.style.borderColor = '#10b981'; // зелен
+            }
         } else {
             counterEl.classList.remove('valid');
             counterEl.classList.add('invalid');
-            input.style.borderColor = len > 0 ? '#ef4444' : '#d1d5db';
+            counterEl.style.color = ''; // по подразбиране червен от класа .invalid
+            
+            if (len > 0 && len < minLength) {
+                errorEl.innerText = `Въведете още поне ${minLength - len} символа.`;
+                input.style.borderColor = '#ef4444'; // червен
+            } else if (len > maxLength) {
+                errorEl.innerText = `Текстът е твърде дълъг. Моля, премахнете ${len - maxLength} символа.`;
+                input.style.borderColor = '#ef4444'; // червен
+            } else {
+                errorEl.innerText = '';
+                input.style.borderColor = '#d1d5db'; // неутрален
+            }
         }
         
         validateForm();
     }
 
-    function handleBlur(input, errorEl, minLength) {
+    function handleBlur(input, errorEl, minLength, maxLength) {
         const len = input.value.trim().length;
         if (len > 0 && len < minLength) {
             errorEl.innerText = `Въведете още поне ${minLength - len} символа.`;
+        } else if (len > maxLength) {
+            errorEl.innerText = `Текстът е твърде дълъг. Моля, премахнете ${len - maxLength} символа.`;
         }
     }
 
-    businessDesc.addEventListener('input', () => updateCounter(businessDesc, businessCounter, businessError, 30));
-    pageText.addEventListener('input', () => updateCounter(pageText, textCounter, textError, 100));
+    businessDesc.addEventListener('input', () => updateCounter(businessDesc, businessCounter, businessError, 30, 500));
+    pageText.addEventListener('input', () => updateCounter(pageText, textCounter, textError, 100, 10000));
 
-    businessDesc.addEventListener('blur', () => handleBlur(businessDesc, businessError, 30));
-    pageText.addEventListener('blur', () => handleBlur(pageText, textError, 100));
+    businessDesc.addEventListener('blur', () => handleBlur(businessDesc, businessError, 30, 500));
+    pageText.addEventListener('blur', () => handleBlur(pageText, textError, 100, 10000));
 
     // Проверка на останалите полета за активиране на бутона
     ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
-        document.getElementById(id).addEventListener('input', validateForm);
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', validateForm);
     });
+
+    // Управление на състоянията и изгледите (Task 12)
+    function showInputView() {
+        resultsSection.style.display = 'none';
+        inputSection.style.display = 'block';
+        
+        inputSection.classList.remove('fade-in');
+        void inputSection.offsetWidth; // Force reflow
+        inputSection.classList.add('fade-in');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showResultsView() {
+        inputSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+        
+        resultsSection.classList.remove('fade-in');
+        void resultsSection.offsetWidth; // Force reflow
+        resultsSection.classList.add('fade-in');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function clearForm() {
+        const fieldsToClear = ['page-url', 'business-desc', 'page-goal', 'target-audience', 'current-problem', 'desired-action', 'page-text'];
+        fieldsToClear.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = '';
+                el.style.borderColor = '#d1d5db';
+            }
+        });
+        
+        // Нулиране на броячи и валидация
+        updateCounter(businessDesc, businessCounter, businessError, 30, 500);
+        updateCounter(pageText, textCounter, textError, 100, 10000);
+        validateForm();
+        
+        // Изчистване на черновата
+        clearDraft();
+    }
+
+    if (newAnalysisBtn) {
+        newAnalysisBtn.addEventListener('click', () => {
+            clearForm();
+            showInputView();
+        });
+    }
+
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            if (activeAnalysisData) {
+                // Попълване на формата с текущите данни
+                const urlInput = document.getElementById('page-url');
+                if (urlInput) urlInput.value = activeAnalysisData.url || '';
+                
+                businessDesc.value = activeAnalysisData.businessDesc || '';
+                
+                const goalInput = document.getElementById('page-goal');
+                if (goalInput) goalInput.value = activeAnalysisData.pageGoal || '';
+                
+                const audienceInput = document.getElementById('target-audience');
+                if (audienceInput) audienceInput.value = activeAnalysisData.targetAudience || '';
+                
+                const problemInput = document.getElementById('current-problem');
+                if (problemInput) problemInput.value = activeAnalysisData.currentProblem || '';
+                
+                const actionInput = document.getElementById('desired-action');
+                if (actionInput) actionInput.value = activeAnalysisData.desiredAction || '';
+                
+                pageText.value = activeAnalysisData.pageText || '';
+                
+                // Ръчно оцветяване на полетата
+                ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.borderColor = el.value.trim() !== '' ? '#10b981' : '#d1d5db';
+                });
+
+                // Обновяване на броячи
+                updateCounter(businessDesc, businessCounter, businessError, 30, 500);
+                updateCounter(pageText, textCounter, textError, 100, 10000);
+                validateForm();
+                
+                // Запазваме данните като нова активна чернова
+                saveDraft();
+            }
+            showInputView();
+        });
+    }
+
+    if (loadDemoBtn) {
+        loadDemoBtn.addEventListener('click', () => {
+            // Проверка дали някое от полетата на формата (без API Key) вече съдържа въведен от потребителя текст
+            const fieldsToCheck = ['page-url', 'business-desc', 'page-goal', 'target-audience', 'current-problem', 'desired-action', 'page-text'];
+            const hasExistingData = fieldsToCheck.some(id => {
+                const el = document.getElementById(id);
+                return el && el.value.trim() !== '';
+            });
+
+            if (hasExistingData) {
+                const confirmPrefill = window.confirm("Сигурни ли сте, че искате да заредите примерния случай? Текущите ви промени във формата ще бъдат презаписани.");
+                if (!confirmPrefill) return;
+            }
+
+            // Попълване на формата с примерни данни
+            const urlInput = document.getElementById('page-url');
+            if (urlInput) urlInput.value = DEMO_DATA.url;
+            
+            businessDesc.value = DEMO_DATA.businessDesc;
+            
+            const goalInput = document.getElementById('page-goal');
+            if (goalInput) goalInput.value = DEMO_DATA.pageGoal;
+            
+            const audienceInput = document.getElementById('target-audience');
+            if (audienceInput) audienceInput.value = DEMO_DATA.targetAudience;
+            
+            const problemInput = document.getElementById('current-problem');
+            if (problemInput) problemInput.value = DEMO_DATA.currentProblem;
+            
+            const actionInput = document.getElementById('desired-action');
+            if (actionInput) actionInput.value = DEMO_DATA.desiredAction;
+            
+            pageText.value = DEMO_DATA.pageText;
+
+            // Обновяваме оцветяването на границите на текстовите полета
+            ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.borderColor = '#10b981'; // зелена валидна граница
+            });
+
+            // Обновяваме броячите и валидацията на формата
+            updateCounter(businessDesc, businessCounter, businessError, 30, 500);
+            updateCounter(pageText, textCounter, textError, 100, 10000);
+            validateForm();
+
+            // Автоматично запазване на новите данни като чернова
+            saveDraft();
+        });
+    }
 
     // Динамични съобщения при зареждане (Task 09)
     const loadingText = document.getElementById('loading-text');
@@ -112,8 +290,83 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingText.classList.remove('fade-out');
     }
 
-    // Зареждане на историята при първоначално отваряне
+    // Автоматично запазване на чернова (Task 13)
+    function saveDraft() {
+        const draft = {
+            url: document.getElementById('page-url').value,
+            businessDesc: businessDesc.value,
+            pageGoal: document.getElementById('page-goal').value,
+            targetAudience: document.getElementById('target-audience').value,
+            currentProblem: document.getElementById('current-problem').value,
+            desiredAction: document.getElementById('desired-action').value,
+            pageText: pageText.value
+        };
+        localStorage.setItem('cro_analyzer_draft', JSON.stringify(draft));
+    }
+
+    function loadDraft() {
+        const draftStr = localStorage.getItem('cro_analyzer_draft');
+        if (draftStr) {
+            try {
+                const draft = JSON.parse(draftStr);
+                if (draft) {
+                    const urlInput = document.getElementById('page-url');
+                    if (urlInput) urlInput.value = draft.url || '';
+                    businessDesc.value = draft.businessDesc || '';
+                    const goalInput = document.getElementById('page-goal');
+                    if (goalInput) goalInput.value = draft.pageGoal || '';
+                    const audienceInput = document.getElementById('target-audience');
+                    if (audienceInput) audienceInput.value = draft.targetAudience || '';
+                    const problemInput = document.getElementById('current-problem');
+                    if (problemInput) problemInput.value = draft.currentProblem || '';
+                    const actionInput = document.getElementById('desired-action');
+                    if (actionInput) actionInput.value = draft.desiredAction || '';
+                    pageText.value = draft.pageText || '';
+
+                    // Обновяваме броячите и оцветяването на границите
+                    updateCounter(businessDesc, businessCounter, businessError, 30, 500);
+                    updateCounter(pageText, textCounter, textError, 100, 10000);
+
+                    ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.borderColor = el.value.trim() !== '' ? '#10b981' : '#d1d5db';
+                    });
+
+                    validateForm();
+                }
+            } catch (e) {
+                console.error("Грешка при зареждане на черновата:", e);
+            }
+        }
+    }
+
+    function clearDraft() {
+        localStorage.removeItem('cro_analyzer_draft');
+    }
+
+    // Закачане на слушатели за автоматично запазване
+    ['page-url', 'business-desc', 'page-goal', 'target-audience', 'current-problem', 'desired-action', 'page-text'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', saveDraft);
+        }
+    });
+
+    // Зареждане на API ключа
+    const apiKeyInput = document.getElementById('api-key');
+    if (apiKeyInput) {
+        const savedApiKey = localStorage.getItem('cro_api_key');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+        }
+        apiKeyInput.addEventListener('input', () => {
+            localStorage.setItem('cro_api_key', apiKeyInput.value);
+        });
+    }
+
+    // Зареждане на историята и черновата при първоначално отваряне
     loadHistory();
+    loadDraft();
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -134,11 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
             pageText: document.getElementById('page-text').value
         };
 
-        // Скриваме предишни резултати и показваме зареждане
-        resultsSection.style.display = 'block';
+        // Запазваме състоянието за повторно генериране
+        activeAnalysisData = formData;
+
+        // Скриваме формата и показваме резултатите/зареждането
+        showResultsView();
         resultsContainer.style.display = 'none';
+        if (regenerateBtn) regenerateBtn.disabled = true;
         startLoadingAnimation();
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
 
         // Премахване на стари съобщения за грешка
         const oldError = document.getElementById('api-error');
@@ -150,6 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Запазване в Local Storage
             saveToHistory(formData, aiResponse);
+            
+            // Изчистване на черновата при успешна генерация
+            clearDraft();
             
             stopLoadingAnimation();
             resultsContainer.style.display = 'block';
@@ -167,6 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
             errorDiv.style.marginBottom = '1rem';
             errorDiv.innerHTML = `<strong>Възникна грешка при връзката с AI:</strong> ${error.message}`;
             resultsSection.insertBefore(errorDiv, resultsContainer);
+        } finally {
+            if (regenerateBtn) regenerateBtn.disabled = false;
         }
     });
 
@@ -206,11 +467,53 @@ Page Text/Content:
 ${data.pageText}
 `;
 
+        // Ако сме заредени от локалния сървър (или друг уеб сървър), пробваме през проксито
+        if (window.location.protocol.startsWith('http')) {
+            let useFallback = false;
+            let errorToThrow = null;
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        systemPrompt: systemPrompt,
+                        userPrompt: userPrompt
+                    })
+                });
+
+                if (response.ok) {
+                    const json = await response.json();
+                    return json.choices[0].message.content;
+                } else {
+                    if (response.status === 404) {
+                        useFallback = true;
+                    } else {
+                        const errorData = await response.json();
+                        errorToThrow = new Error(errorData.error?.message || 'Неизвестна грешка от сървъра');
+                    }
+                }
+            } catch (err) {
+                console.warn("Прокси заявката пропадна, опит за директна връзка...", err);
+                useFallback = true;
+            }
+
+            if (errorToThrow) {
+                throw errorToThrow;
+            }
+            if (!useFallback) {
+                throw new Error('Неуспешно проксиране на заявката.');
+            }
+        }
+
+        // Директна връзка (fallback за статично зареждане от файл)
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': \`Bearer \${apiKey}\`
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
@@ -267,6 +570,7 @@ ${data.pageText}
             date: new Date().toISOString(),
             url: formData.url || 'Анализ без URL',
             businessDesc: formData.businessDesc,
+            formData: formData,
             response: aiResponse
         };
 
@@ -302,15 +606,16 @@ ${data.pageText}
             });
 
             // Заглавието ще бъде URL-ът или част от описанието, ако няма URL
-            const shortTitle = item.url !== 'Анализ без URL' ? item.url : item.businessDesc.substring(0, 30) + '...';
+            const desc = item.businessDesc ? item.businessDesc : 'Стар анализ';
+            const shortTitle = item.url !== 'Анализ без URL' ? item.url : desc.substring(0, 30) + '...';
 
-            div.innerHTML = \`
+            div.innerHTML = `
                 <div class="history-item-header">
-                    <div class="history-date">\${dateStr}</div>
+                    <div class="history-date">${dateStr}</div>
                     <button class="delete-btn" title="Изтрий">&times;</button>
                 </div>
-                <div class="history-title" title="\${item.url !== 'Анализ без URL' ? item.url : item.businessDesc}">\${shortTitle}</div>
-            \`;
+                <div class="history-title" title="${item.url !== 'Анализ без URL' ? item.url : desc}">${shortTitle}</div>
+            `;
 
             // Изтриване на конкретен запис
             const deleteBtn = div.querySelector('.delete-btn');
@@ -323,10 +628,26 @@ ${data.pageText}
                 try {
                     currentAnalysisId = item.id;
                     parseAndDisplayResults(item.response);
-                    resultsSection.style.display = 'block';
+                    
+                    // Запазваме активните данни за повторно генериране
+                    if (item.formData) {
+                        activeAnalysisData = item.formData;
+                    } else {
+                        // Fallback за записи, генерирани преди Task 11
+                        activeAnalysisData = {
+                            url: item.url === 'Анализ без URL' ? '' : item.url,
+                            businessDesc: item.businessDesc || '',
+                            pageGoal: '',
+                            targetAudience: '',
+                            currentProblem: '',
+                            desiredAction: '',
+                            pageText: ''
+                        };
+                    }
+
+                    showResultsView();
                     resultsContainer.style.display = 'block';
                     loadingIndicator.style.display = 'none';
-                    resultsSection.scrollIntoView({ behavior: 'smooth' });
                 } catch (e) {
                     alert('Неуспешно разчитане на този запис от историята. Може би е запазен в стар (Markdown) формат.');
                 }
@@ -350,9 +671,11 @@ ${data.pageText}
 
     function resetMainView() {
         currentAnalysisId = null;
+        activeAnalysisData = null;
         resultsSection.style.display = 'none';
         resultsContainer.style.display = 'none';
         loadingIndicator.style.display = 'none';
+        showInputView();
     }
 
     if (btnClearHistory) {
@@ -426,8 +749,62 @@ ${document.getElementById('res-nextsteps').innerText}
                 }, 2000);
             }).catch(err => {
                 console.error('Error copying section:', err);
-                alert('Неуспешно копиране на секцията.');
             });
         });
     });
+
+    // Повторно генериране на анализ (Task 11)
+    if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', async () => {
+            if (!activeAnalysisData) {
+                alert('Няма данни за повторно генериране.');
+                return;
+            }
+
+            const apiKey = document.getElementById('api-key').value;
+            if (!apiKey) {
+                alert('Моля, въведете OpenAI API Key.');
+                return;
+            }
+
+            // Скриваме предишни резултати и показваме зареждане
+            resultsContainer.style.display = 'none';
+            regenerateBtn.disabled = true;
+            btnGenerate.disabled = true;
+            startLoadingAnimation();
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Премахване на стари съобщения за грешка
+            const oldError = document.getElementById('api-error');
+            if (oldError) oldError.remove();
+
+            try {
+                const aiResponse = await callOpenAI(apiKey, activeAnalysisData);
+                parseAndDisplayResults(aiResponse);
+                
+                // Запазване в Local Storage като нов запис
+                saveToHistory(activeAnalysisData, aiResponse);
+                
+                stopLoadingAnimation();
+                resultsContainer.style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                stopLoadingAnimation();
+                resultsContainer.style.display = 'none';
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'api-error';
+                errorDiv.style.color = '#b91c1c';
+                errorDiv.style.backgroundColor = '#fee2e2';
+                errorDiv.style.padding = '1rem';
+                errorDiv.style.borderRadius = '6px';
+                errorDiv.style.marginBottom = '1rem';
+                errorDiv.innerHTML = `<strong>Възникна грешка при връзката с AI:</strong> ${error.message}`;
+                resultsSection.insertBefore(errorDiv, resultsContainer);
+            } finally {
+                regenerateBtn.disabled = false;
+                validateForm();
+            }
+        });
+    }
 });

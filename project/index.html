@@ -10,8 +10,13 @@
 </head>
 <body>
     <header>
-        <h1>CRO Analyzer AI</h1>
-        <p>Вашият AI асистент за оптимизация на конверсиите</p>
+        <div class="header-content">
+            <div class="header-text">
+                <h1>CRO Analyzer AI</h1>
+                <p>Вашият AI асистент за оптимизация на конверсиите</p>
+            </div>
+            <button id="new-analysis-btn" class="new-btn">➕ Нов анализ</button>
+        </div>
     </header>
 
     <div class="layout-container">
@@ -28,7 +33,10 @@
         <main>
             <!-- Формата ще бъде добавена тук според Task 01 -->
         <section id="input-section">
-            <h2>Въвеждане на данни</h2>
+            <div class="input-header">
+                <h2>Въвеждане на данни</h2>
+                <button type="button" id="load-demo-btn" class="demo-btn">💡 Зареди примерен случай</button>
+            </div>
             <form id="cro-form">
                 <div class="form-group" style="background-color: #eff6ff; padding: 1rem; border-radius: 6px; border: 1px solid #bfdbfe;">
                     <label for="api-key">OpenAI API Key (Required for AI)</label>
@@ -46,7 +54,7 @@
                     <textarea id="business-desc" required rows="3" placeholder="Какво продавате или предлагате?"></textarea>
                     <div class="field-meta">
                         <span class="error-msg" id="business-desc-error"></span>
-                        <span class="char-counter" id="business-desc-counter">0 / 30 мин.</span>
+                        <span class="char-counter" id="business-desc-counter">0 / 30 мин. (макс. 500)</span>
                     </div>
                 </div>
 
@@ -75,7 +83,7 @@
                     <textarea id="page-text" required rows="8" placeholder="Копирайте текста от лендинг страницата тук..."></textarea>
                     <div class="field-meta">
                         <span class="error-msg" id="page-text-error"></span>
-                        <span class="char-counter" id="page-text-counter">0 / 100 мин.</span>
+                        <span class="char-counter" id="page-text-counter">0 / 100 мин. (макс. 10000)</span>
                     </div>
                 </div>
 
@@ -88,6 +96,8 @@
             <div class="results-header">
                 <h2>Резултати от анализа</h2>
                 <div class="results-actions">
+                    <button id="edit-btn" class="edit-btn">📝 Редактирай данните</button>
+                    <button id="regenerate-btn" class="regenerate-btn">🔄 Повторно генериране</button>
                     <button id="copy-btn">Копирай резултата</button>
                     <button id="print-btn" class="print-btn">Принтирай / PDF</button>
                 </div>

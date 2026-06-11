@@ -10,12 +10,33 @@ body {
 }
 
 header {
-    text-align: center;
     margin-bottom: 2rem;
 }
 
-h1 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 1rem;
+}
+
+.header-text h1 {
+    margin: 0;
     color: #111827;
+}
+
+.header-text p {
+    margin: 0.25rem 0 0 0;
+    color: #6b7280;
+}
+
+@media (max-width: 600px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
 }
 
 .layout-container {
@@ -238,6 +259,71 @@ button:disabled {
     background-color: #4b5563;
 }
 
+.regenerate-btn {
+    background-color: #6366f1; /* indigo-500 */
+}
+
+.regenerate-btn:hover:not(:disabled) {
+    background-color: #4f46e5; /* indigo-600 */
+}
+
+.new-btn {
+    background-color: #10b981; /* emerald-500 */
+}
+
+.new-btn:hover:not(:disabled) {
+    background-color: #059669;
+}
+
+.edit-btn {
+    background-color: #f59e0b; /* amber-500 */
+}
+
+.edit-btn:hover:not(:disabled) {
+    background-color: #d97706;
+}
+
+.fade-in {
+    animation: fadeIn 0.35s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+}
+
+.input-header h2 {
+    margin: 0;
+}
+
+.demo-btn {
+    background-color: #f3f4f6; /* gray-100 */
+    color: #374151; /* gray-700 */
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.demo-btn:hover:not(:disabled) {
+    background-color: #e5e7eb; /* gray-200 */
+    color: #111827; /* gray-900 */
+}
+
 .result-box {
     background-color: #f3f4f6;
     padding: 1.5rem;
@@ -358,7 +444,8 @@ button:disabled {
     .results-actions,
     .delete-btn,
     .clear-btn,
-    .section-copy-btn {
+    .section-copy-btn,
+    .new-btn {
         display: none !important;
     }
 
