@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRO Analyzer AI</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.1">
     <!-- Използваме marked.js за рендериране на Markdown отговора от AI -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -38,20 +38,20 @@
                 <button type="button" id="load-demo-btn" class="demo-btn">💡 Зареди примерен случай</button>
             </div>
             <form id="cro-form">
-                <div class="form-group" style="background-color: #eff6ff; padding: 1rem; border-radius: 6px; border: 1px solid #bfdbfe;">
-                    <label for="api-key">OpenAI API Key (Required for AI)</label>
-                    <input type="password" id="api-key" required placeholder="sk-...">
-                    <small style="color: #6b7280; display: block; margin-top: 0.5rem;">Ключът се използва само локално във вашия браузър и не се запазва на сървър.</small>
+                <div class="form-group api-key-container" style="background-color: rgba(99, 102, 241, 0.08); padding: 1.25rem; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.25);">
+                    <label for="api-key" style="color: #e0e7ff;">OpenAI API Key (Required for AI)</label>
+                    <input type="password" id="api-key" required placeholder="sk-..." style="background-color: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <small style="color: #94a3b8; display: block; margin-top: 0.5rem; line-height: 1.4;">Ключът се използва само локално във вашия браузър и не се запазва на сървър.</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="page-url">URL на страницата (Optional)</label>
-                    <input type="url" id="page-url" placeholder="https://example.com">
+                    <label for="page-url">URL на страницата *</label>
+                    <input type="url" id="page-url" required placeholder="https://example.com">
                 </div>
                 
                 <div class="form-group">
-                    <label for="business-desc">Кратко описание на бизнеса *</label>
-                    <textarea id="business-desc" required rows="3" placeholder="Какво продавате или предлагате?"></textarea>
+                    <label for="business-desc">Кратко описание на бизнеса</label>
+                    <textarea id="business-desc" rows="3" placeholder="Какво продавате или предлагате?"></textarea>
                     <div class="field-meta">
                         <span class="error-msg" id="business-desc-error"></span>
                         <span class="char-counter" id="business-desc-counter">0 / 30 мин. (макс. 500)</span>
@@ -59,28 +59,28 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="page-goal">Цел на страницата *</label>
-                    <input type="text" id="page-goal" required placeholder="Напр. генериране на лийдове, продажби">
+                    <label for="page-goal">Цел на страницата</label>
+                    <input type="text" id="page-goal" placeholder="Напр. генериране на лийдове, продажби">
                 </div>
 
                 <div class="form-group">
-                    <label for="target-audience">Основна аудитория *</label>
-                    <input type="text" id="target-audience" required placeholder="Кой е вашият идеален клиент?">
+                    <label for="target-audience">Основна аудитория</label>
+                    <input type="text" id="target-audience" placeholder="Кой е вашият идеален клиент?">
                 </div>
 
                 <div class="form-group">
-                    <label for="current-problem">Текущ проблем *</label>
-                    <textarea id="current-problem" required rows="3" placeholder="Напр. висок bounce rate, малко конверсии"></textarea>
+                    <label for="current-problem">Текущ проблем</label>
+                    <textarea id="current-problem" rows="3" placeholder="Напр. висок bounce rate, малко конверсии"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="desired-action">Желано действие *</label>
-                    <input type="text" id="desired-action" required placeholder="Напр. попълване на форма, покупка">
+                    <label for="desired-action">Желано действие</label>
+                    <input type="text" id="desired-action" placeholder="Напр. попълване на форма, покупка">
                 </div>
 
                 <div class="form-group">
-                    <label for="page-text">Текст от страницата / ръчно описание *</label>
-                    <textarea id="page-text" required rows="8" placeholder="Копирайте текста от лендинг страницата тук..."></textarea>
+                    <label for="page-text">Текст от страницата / ръчно описание</label>
+                    <textarea id="page-text" rows="8" placeholder="Копирайте текста от лендинг страницата тук..."></textarea>
                     <div class="field-meta">
                         <span class="error-msg" id="page-text-error"></span>
                         <span class="char-counter" id="page-text-counter">0 / 100 мин. (макс. 10000)</span>

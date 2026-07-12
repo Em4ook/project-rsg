@@ -39,17 +39,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const businessError = document.getElementById('business-desc-error');
     const textError = document.getElementById('page-text-error');
 
+    // Помощна функция за оцветяване на границите на обикновените полета
+    function updateSimpleFieldBorder(el) {
+        if (!el) return;
+        if (el.id === 'page-url') {
+            if (el.value.trim() !== '') {
+                if (el.checkValidity()) {
+                    el.style.borderColor = '#10b981'; // зелен за валиден URL
+                } else {
+                    el.style.borderColor = '#ef4444'; // червен за невалиден URL
+                }
+            } else {
+                el.style.borderColor = '#d1d5db'; // неутрален при празно поле
+            }
+        } else {
+            el.style.borderColor = el.value.trim() !== '' ? '#10b981' : '#d1d5db';
+        }
+    }
+
     // Логика за валидация на формата
     function validateForm() {
+        const urlInput = document.getElementById('page-url');
+        const isUrl = urlInput && urlInput.value.trim() !== '' && urlInput.checkValidity();
+        
         const busLength = businessDesc.value.trim().length;
         const textLength = pageText.value.trim().length;
         
-        const isGoal = document.getElementById('page-goal').value.trim() !== '';
-        const isAudience = document.getElementById('target-audience').value.trim() !== '';
-        const isProblem = document.getElementById('current-problem').value.trim() !== '';
-        const isAction = document.getElementById('desired-action').value.trim() !== '';
+        const isBusValid = busLength === 0 || (busLength >= 30 && busLength <= 500);
+        const isTextValid = textLength === 0 || (textLength >= 100 && textLength <= 10000);
 
-        const isValid = busLength >= 30 && busLength <= 500 && textLength >= 100 && textLength <= 10000 && isGoal && isAudience && isProblem && isAction;
+        const isValid = isUrl && isBusValid && isTextValid;
         btnGenerate.disabled = !isValid;
     }
 
@@ -57,7 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const len = input.value.trim().length;
         counterEl.innerText = `${len} / ${minLength} мин. (макс. ${maxLength})`;
         
-        if (len >= minLength && len <= maxLength) {
+        if (len === 0) {
+            counterEl.classList.remove('valid', 'invalid');
+            counterEl.style.color = '';
+            errorEl.innerText = '';
+            input.style.borderColor = '#d1d5db'; // неутрален
+        } else if (len >= minLength && len <= maxLength) {
             counterEl.classList.add('valid');
             counterEl.classList.remove('invalid');
             errorEl.innerText = '';
@@ -75,15 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
             counterEl.classList.add('invalid');
             counterEl.style.color = ''; // по подразбиране червен от класа .invalid
             
-            if (len > 0 && len < minLength) {
+            if (len < minLength) {
                 errorEl.innerText = `Въведете още поне ${minLength - len} символа.`;
                 input.style.borderColor = '#ef4444'; // червен
             } else if (len > maxLength) {
                 errorEl.innerText = `Текстът е твърде дълъг. Моля, премахнете ${len - maxLength} символа.`;
                 input.style.borderColor = '#ef4444'; // червен
-            } else {
-                errorEl.innerText = '';
-                input.style.borderColor = '#d1d5db'; // неутрален
             }
         }
         
@@ -105,10 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
     businessDesc.addEventListener('blur', () => handleBlur(businessDesc, businessError, 30, 500));
     pageText.addEventListener('blur', () => handleBlur(pageText, textError, 100, 10000));
 
-    // Проверка на останалите полета за активиране на бутона
-    ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+    // Проверка на останалите полета за активиране на бутона и оцветяване на границите
+    ['page-url', 'page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('input', validateForm);
+        if (el) {
+            el.addEventListener('input', () => {
+                updateSimpleFieldBorder(el);
+                validateForm();
+            });
+        }
     });
 
     // Управление на състоянията и изгледите (Task 12)
@@ -184,9 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageText.value = activeAnalysisData.pageText || '';
                 
                 // Ръчно оцветяване на полетата
-                ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+                ['page-url', 'page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) el.style.borderColor = el.value.trim() !== '' ? '#10b981' : '#d1d5db';
+                    if (el) updateSimpleFieldBorder(el);
                 });
 
                 // Обновяване на броячи
@@ -236,9 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
             pageText.value = DEMO_DATA.pageText;
 
             // Обновяваме оцветяването на границите на текстовите полета
-            ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+            ['page-url', 'page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.style.borderColor = '#10b981'; // зелена валидна граница
+                if (el) updateSimpleFieldBorder(el);
             });
 
             // Обновяваме броячите и валидацията на формата
@@ -327,9 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateCounter(businessDesc, businessCounter, businessError, 30, 500);
                     updateCounter(pageText, textCounter, textError, 100, 10000);
 
-                    ['page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
+                    ['page-url', 'page-goal', 'target-audience', 'current-problem', 'desired-action'].forEach(id => {
                         const el = document.getElementById(id);
-                        if (el) el.style.borderColor = el.value.trim() !== '' ? '#10b981' : '#d1d5db';
+                        if (el) updateSimpleFieldBorder(el);
                     });
 
                     validateForm();
@@ -433,38 +459,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function callOpenAI(apiKey, data) {
         const systemPrompt = `
-You are a conversion rate optimization expert. Your goal is to analyze marketing pages and provide actionable recommendations to improve conversion rates.
-Use the following principles:
-- Focus on Value Proposition Clarity
-- Check Headline Effectiveness
-- Analyze CTA Placement and Copy
-- Check Visual Hierarchy and Trust Signals
-- Address Friction Points
+You are a conversion rate optimization expert. Your analysis MUST be based strictly and exclusively on the provided page information (URL, business description, page goal, target audience, current problem, desired action, and page text) and the CRO framework rules from skill.md. Do not assume, invent, or hallucinate any external details or facts that are not present in the user's input.
+
+You must evaluate the page context across the following CRO dimensions from skill.md:
+1. Value Proposition Clarity (Is the primary benefit clear, specific, differentiated, and in the customer's language?)
+2. Headline Effectiveness (Outcome-focused, specific, matching traffic source)
+3. CTA Placement, Copy, and Hierarchy (Is there one clear primary action? Visible without scrolling? Value-focused copy?)
+4. Visual Hierarchy and Scannability (Scannable message, visual prominence of key elements)
+5. Trust Signals and Social Proof (Logos, testimonials, case studies, reviews)
+6. Objection Handling (Addressing price, fit, friction, guarantee concerns via FAQs, comparison, etc.)
+7. Friction Points (Too many form fields, unclear next steps, confusing navigation)
+
+Your output must follow the structure required below. Do not add general advice or industry assumptions that are not directly relevant to the specific page content provided.
 
 IMPORTANT OUTPUT FORMAT:
 You MUST return your analysis strictly as a valid JSON object. Do not add any text or markdown block outside the JSON object.
 The JSON object must have exactly these keys:
 - "summary": containing the markdown for "Обобщение на страницата"
 - "problems": containing the markdown for "Основни CRO проблеми"
-- "recommendations": containing the markdown for "Препоръки за подобрение"
+- "recommendations": containing the markdown for "Препоръки за подобрение" (must categorize into Quick Wins, High-Impact Changes, Test Ideas, and Copy Alternatives as per skill.md)
 - "structure": containing the markdown for "Предложена структура на страницата"
 - "priorities": containing the markdown for "Приоритети"
 - "next_steps": containing the markdown for "Next steps"
 
-All values should be formatted as Markdown (e.g. using bullet points, bold text).
+All values should be formatted as Markdown in Bulgarian (e.g. using bullet points, bold text).
 `;
 
         const userPrompt = `
 Please analyze the following page context:
 - URL: ${data.url || 'N/A'}
-- Business Description: ${data.businessDesc}
-- Page Goal: ${data.pageGoal}
-- Target Audience: ${data.targetAudience}
-- Current Problem: ${data.currentProblem}
-- Desired Action: ${data.desiredAction}
+- Business Description: ${data.businessDesc || 'N/A'}
+- Page Goal: ${data.pageGoal || 'N/A'}
+- Target Audience: ${data.targetAudience || 'N/A'}
+- Current Problem: ${data.currentProblem || 'N/A'}
+- Desired Action: ${data.desiredAction || 'N/A'}
 
 Page Text/Content:
-${data.pageText}
+${data.pageText || 'N/A'}
+
+Analyze only the information provided above and do not hallucinate any details. Rely exclusively on the methodology described.
 `;
 
         // Ако сме заредени от локалния сървър (или друг уеб сървър), пробваме през проксито
